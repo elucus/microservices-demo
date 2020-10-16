@@ -22,6 +22,7 @@ using Google.Protobuf;
 using Grpc.Core;
 using Hipstershop;
 using StackExchange.Redis;
+using OpenTelemetry.Trace;
 
 namespace cartservice.cartstore
 {
@@ -30,6 +31,7 @@ namespace cartservice.cartstore
         private const string CART_FIELD_NAME = "cart";
         private const int REDIS_RETRY_NUM = 5;
 
+        public ConnectionMultiplexer Redis => redis;
         private volatile ConnectionMultiplexer redis;
         private volatile bool isRedisConnectionOpened = false;
 
@@ -53,6 +55,8 @@ namespace cartservice.cartstore
             redisConnectionOptions.ReconnectRetryPolicy = new ExponentialRetry(100);
 
             redisConnectionOptions.KeepAlive = 180;
+
+         
         }
 
         public Task InitializeAsync()
@@ -78,6 +82,7 @@ namespace cartservice.cartstore
 
                 Console.WriteLine("Connecting to Redis: " + connectionString);
                 redis = ConnectionMultiplexer.Connect(redisConnectionOptions);
+
 
                 if (redis == null || !redis.IsConnected)
                 {
@@ -149,7 +154,7 @@ namespace cartservice.cartstore
             }
             catch (Exception ex)
             {
-                throw new RpcException(new Status(StatusCode.FailedPrecondition, $"Can't access cart storage. {ex}"));
+                throw new RpcException(new Grpc.Core.Status(StatusCode.FailedPrecondition, $"Can't access cart storage. {ex}"));
             }
         }
 
@@ -167,7 +172,7 @@ namespace cartservice.cartstore
             }
             catch (Exception ex)
             {
-                throw new RpcException(new Status(StatusCode.FailedPrecondition, $"Can't access cart storage. {ex}"));
+                throw new RpcException(new Grpc.Core.Status(StatusCode.FailedPrecondition, $"Can't access cart storage. {ex}"));
             }
         }
 
@@ -194,7 +199,7 @@ namespace cartservice.cartstore
             }
             catch (Exception ex)
             {
-                throw new RpcException(new Status(StatusCode.FailedPrecondition, $"Can't access cart storage. {ex}"));
+                throw new RpcException(new Grpc.Core.Status(StatusCode.FailedPrecondition, $"Can't access cart storage. {ex}"));
             }
         }
 

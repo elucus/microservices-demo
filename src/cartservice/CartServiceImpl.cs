@@ -14,6 +14,7 @@
 
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using cartservice.interfaces;
@@ -36,19 +37,31 @@ namespace cartservice
 
         public async override Task<Empty> AddItem(AddItemRequest request, Grpc.Core.ServerCallContext context)
         {
-            await cartStore.AddItemAsync(request.UserId, request.Item.ProductId, request.Item.Quantity);
+            var source = new ActivitySource("cartservice-add");
+            using (var parent = source.StartActivity("AddItem", ActivityKind.Server))
+            {
+                await cartStore.AddItemAsync(request.UserId, request.Item.ProductId, request.Item.Quantity);
+            }
             return Empty;
         }
 
         public async override Task<Empty> EmptyCart(EmptyCartRequest request, ServerCallContext context)
         {
-            await cartStore.EmptyCartAsync(request.UserId);
+            var source = new ActivitySource("cartservice-empty");
+            using (var parent = source.StartActivity("EmptyCart", ActivityKind.Server))
+            {
+                await cartStore.EmptyCartAsync(request.UserId);
+            }
             return Empty;
         }
 
         public override Task<Hipstershop.Cart> GetCart(GetCartRequest request, ServerCallContext context)
         {
-            return cartStore.GetCartAsync(request.UserId);
+            var source = new ActivitySource("cartservice-get");
+            using (var parent = source.StartActivity("GetCart", ActivityKind.Server))
+            {
+                return cartStore.GetCartAsync(request.UserId);
+            }
         }
     }
 }
