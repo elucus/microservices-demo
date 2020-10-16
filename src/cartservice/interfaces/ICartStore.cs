@@ -13,11 +13,14 @@
 // limitations under the License.
 
 using System.Threading.Tasks;
+using StackExchange.Redis;
 
 namespace cartservice.interfaces
 {
     internal interface ICartStore
     {
+        ConnectionMultiplexer Redis { get; }
+
         Task InitializeAsync();
         
         Task AddItemAsync(string userId, string productId, int quantity);

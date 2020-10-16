@@ -21,6 +21,7 @@ using cartservice.interfaces;
 using CommandLine;
 using Grpc.Core;
 using Microsoft.Extensions.Configuration;
+using OpenTelemetry.Trace;
 
 namespace cartservice
 {
@@ -51,7 +52,26 @@ namespace cartservice
             {
                 try
                 {
+
                     await cartStore.InitializeAsync();
+
+                    if (cartStore.Redis != null)
+                    {
+                        using var openTelemetry = OpenTelemetry.Sdk.CreateTracerProviderBuilder()
+                           .AddRedisInstrumentation(cartStore.Redis)
+                           .AddSource("cartservice-add")
+                           .AddSource("cartservice-get")
+                           .AddSource("cartservice-empty")
+                           .AddNewRelicExporter(options =>
+                           {
+
+                               options.ApiKey = Environment.GetEnvironmentVariable("NEW_RELIC_API_KEY");
+                               options.ServiceName = "CartService";
+                               options.TraceUrl = new Uri(Environment.GetEnvironmentVariable("NEW_RELIC_TRACE_URL"));
+                           })
+                           .Build();
+                    }
+
 
                     Console.WriteLine($"Trying to start a grpc server at  {host}:{port}");
                     Server server = new Server

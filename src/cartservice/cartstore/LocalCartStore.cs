@@ -18,14 +18,18 @@ using System.Threading.Tasks;
 using System.Linq;
 using cartservice.interfaces;
 using Hipstershop;
+using StackExchange.Redis;
 
 namespace cartservice.cartstore
 {
     internal class LocalCartStore : ICartStore
     {
+
         // Maps between user and their cart
         private ConcurrentDictionary<string, Hipstershop.Cart> userCartItems = new ConcurrentDictionary<string, Hipstershop.Cart>();
         private readonly Hipstershop.Cart emptyCart = new Hipstershop.Cart();
+
+        ConnectionMultiplexer ICartStore.Redis => null;
 
         public Task InitializeAsync()
         {
